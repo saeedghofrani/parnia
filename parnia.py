@@ -1,7 +1,5 @@
 """Parnia: turn text into simple terminal art, without dependencies."""
 
-import argparse
-import sys
 import unicodedata
 
 
@@ -94,36 +92,9 @@ def render(text, character="#", scale=1):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description="Parnia: draw your words as terminal art.")
-    parser.add_argument("text", nargs="*", help="Text to draw; omit to enter interactive mode")
-    parser.add_argument("-c", "--char", default="#", help="Drawing character (default: #)")
-    parser.add_argument("-s", "--scale", type=int, choices=range(1, 6), default=1,
-                        help="Letter scale, 1 through 5 (default: 1)")
-    args = parser.parse_args(argv)
-    try:
-        drawing_character(args.char)
-        if args.text:
-            print(render(" ".join(args.text), args.char, args.scale))
-            return 0
-        if not sys.stdin.isatty():
-            print(render(sys.stdin.read(), args.char, args.scale))
-            return 0
-        print("Parnia | Turn words into art. Type /quit to exit.")
-        print("English letters, numbers and common punctuation; up to 200 characters.")
-        character = input(f"Drawing character [{args.char}]: ") or args.char
-        drawing_character(character)
-        while True:
-            text = input("\nText > ")
-            if text.strip().lower() == "/quit":
-                return 0
-            try:
-                print("\n" + render(text, character, args.scale))
-            except ValueError as error:
-                print(f"Error: {error}", file=sys.stderr)
-    except (EOFError, KeyboardInterrupt):
-        return 0
-    except ValueError as error:
-        parser.error(str(error))
+    # Lazy import keeps the original renderer usable with just Python.
+    from parnia_cli import main as run
+    return run(argv)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,4 @@
+# Optional extras: images, exports, rounded fonts and Persian text.
+Pillow>=10.4,<13
+arabic-reshaper>=3.0,<4
+python-bidi>=0.6,<1
