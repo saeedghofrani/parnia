@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Turn words and photos into character art with Parnia.">
+  <title>Parnia — Character studio</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='studio.css') }}">
+  <script src="{{ url_for('static', filename='studio.js') }}" defer></script>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="/" aria-label="Parnia home"><span class="brand-mark">p</span> parnia<span class="brand-tag">STUDIO</span></a><span class="local-pill"><i></i> Your local playground</span></header>
+  <main>
+    <section class="intro"><div><p class="eyebrow">SMALL CHARACTERS. BIG IDEAS.</p><h1>Make something <em>characterful.</em></h1><p class="subtitle">A name, a photo, a little imagination. Turn it into art you can share.</p></div><span class="intro-glyph" aria-hidden="true">{ * }</span></section>
+    <div class="workspace">
+      <aside class="controls">
+        <div class="mode-tabs" role="tablist" aria-label="Art source"><button id="text-tab" role="tab" aria-selected="true" aria-controls="text-panel" class="active" type="button">Aa &nbsp; Text art</button><button id="image-tab" role="tab" aria-selected="false" aria-controls="image-panel" tabindex="-1" type="button">▧ &nbsp; Photo art</button></div>
+        <form id="studio-form">
+          <section id="text-panel" role="tabpanel" aria-labelledby="text-tab">
+            <label class="field">Your words <span class="label-hint">English or فارسی</span><textarea id="text" maxlength="200" rows="2" dir="auto" spellcheck="false">Parnia</textarea></label>
+            <div class="field-pair"><label class="field">Letter style<select id="font"><option value="block">Classic block</option><option value="tiny">Tiny letters</option><option value="bold">Bold</option><option value="rounded">Smooth & rounded</option><option value="outline">Outline</option><option value="shadow">Drop shadow</option></select></label><label class="field">Fill theme<select id="theme"><option value="classic"># Classic</option><option value="dots">. Dots</option><option value="binary">01 Binary</option><option value="hearts">♥ Hearts</option><option value="stars">* Stars</option></select></label></div>
+            <div class="field-pair"><label class="field">Custom character<input id="character" maxlength="1" placeholder="Optional"></label><label class="field">Hidden message<input id="message" maxlength="100" placeholder="e.g. hello" spellcheck="false"></label></div>
+            <label class="field range-label">Letter scale <output for="scale" id="scale-value">1×</output><input id="scale" type="range" min="1" max="5" value="1" step="1"></label>
+          </section>
+          <section id="image-panel" role="tabpanel" aria-labelledby="image-tab" hidden>
+            <label class="upload" id="drop-zone" for="image"><span class="upload-icon">↥</span><strong>Give your photo a new texture</strong><span id="upload-name">Choose or drop an image</span><small>JPG, PNG, WebP · up to 8 MB</small><input id="image" type="file" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+            <label class="field range-label">Detail / columns <output for="width" id="width-value">100</output><input id="width" type="range" min="10" max="200" value="100" step="10"></label>
+            <div class="field-pair"><label class="field range-label">Brightness <output for="brightness" id="brightness-value">1.0</output><input id="brightness" type="range" min="0.2" max="3" step="0.1" value="1"></label><label class="field range-label">Contrast <output for="contrast" id="contrast-value">1.0</output><input id="contrast" type="range" min="0.2" max="3" step="0.1" value="1"></label></div>
+            <label class="field">Character ramp <select id="ramp"><option value="@%#*+=-:. ">Detailed · @%#*+=-:.</option><option value="@#*. ">Minimal · @#*.</option><option value="01 ">Binary · 01</option><option value="█▓▒░ ">Blocks · █▓▒░</option></select></label>
+            <div class="checks"><label><input id="invert" type="checkbox"> Invert tones</label><label><input id="edges" type="checkbox"> Edge sketch</label><label><input id="mirror" type="checkbox"> Mirror</label></div>
+          </section>
+          <div class="divider"></div>
+          <p class="group-heading">MAKE IT YOURS</p>
+          <label class="field">Color palette<select id="color"><option value="none">Custom / monochrome</option><option value="gradient" selected>Rose → sky</option><option value="rainbow">Rainbow</option><option value="neon">Neon mint</option><option value="ocean">Ocean</option><option value="sunset">Sunset</option></select></label>
+          <div class="color-fields"><label>Background <input id="background" type="color" value="#0c0f18"></label><label>Ink <input id="foreground" type="color" value="#ebf0fa"></label></div>
+          <div class="field-pair"><label class="field">Animation<select id="animation"><option value="none">Still art</option><option value="typewriter">Typewriter</option><option value="pixels">Pixel reveal</option><option value="fall">Falling pixels</option></select></label><label class="field">Frame<select id="border"><option value="none">No frame</option><option value="single">Classic ASCII</option><option value="double">Double line</option><option value="rounded">Rounded corners</option></select></label></div>
+          <details><summary>A few more possibilities</summary><div class="field-pair"><label class="field">Line alignment<select id="alignment"><option value="center">Center</option><option value="left">Left</option><option value="right">Right</option></select></label><label class="field">Frame padding<select id="padding"><option value="0">None</option><option value="1" selected>Small</option><option value="2">Medium</option><option value="4">Roomy</option></select></label></div><label class="field range-label">Animation speed <output for="delay" id="delay-value">60 ms</output><input id="delay" type="range" min="0.02" max="0.5" step="0.02" value="0.06"></label></details>
+          <button class="primary generate" type="submit">Create art <span>↗</span></button>
+        </form>
+      </aside>
+      <section class="preview-column" aria-label="Art preview">
+        <div class="preview-card"><div class="preview-toolbar"><span class="preview-title"><i></i> THE CANVAS</span><div class="preview-actions"><button id="replay" type="button" title="Replay animation">↻ Replay</button><button id="copy" type="button">Copy text</button></div></div>
+          <div id="stage" class="stage"><canvas id="canvas" aria-label="Generated character artwork"></canvas><div id="empty-state" hidden><span>▧</span><h2>A fresh perspective awaits.</h2><p>Choose a photo to start making character art.</p></div></div>
+          <pre id="accessible-art" class="sr-only" aria-live="off"></pre>
+          <div class="preview-footer"><span id="dimensions">Ready to create</span><label for="zoom">Zoom <input id="zoom" type="range" min="0.5" max="2" step="0.1" value="1"><output id="zoom-value">100%</output></label></div>
+        </div>
+        <div id="status" role="status" aria-live="polite">Your preview updates as you explore.</div>
+        <section class="download-card"><div><h2>Made it? Make it yours.</h2><p>Take your creation beyond the canvas.</p></div><div class="download-buttons"><button type="button" data-download="txt">↓ TXT</button><button type="button" data-download="png">↓ PNG</button><button class="dark-button" type="button" data-download="gif">↓ GIF</button></div></section>
+        <section class="presets"><div class="presets-heading"><p class="group-heading">A LITTLE INSPIRATION</p><button id="reset" type="button">Reset all</button></div><div class="preset-list"><button data-preset="neon" type="button"><span class="preset-art mint">01_</span><strong>Midnight code</strong><small>Binary · neon · reveal</small></button><button data-preset="love" type="button"><span class="preset-art rose">♥ ♥</span><strong>With love</strong><small>Hearts · sunset · rounded</small></button><button data-preset="paper" type="button"><span class="preset-art ink">#.#</span><strong>On paper</strong><small>Monochrome · classic frame</small></button></div></section>
+        <p class="privacy-note">Photos are processed by your local server and are never added to the project. Nothing is saved unless you download it.</p>
+      </section>
+    </div>
+    <footer>Made of little things. <span>Parnia / character studio</span></footer>
+  </main>
+</body>
+</html>

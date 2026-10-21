@@ -8,6 +8,49 @@ lettering, rounded fonts, image conversion and PNG/GIF exports.
 
 ![Animated Parnia lettering](examples/parnia.gif)
 
+## Web studio / local server
+
+Prefer choosing options in a browser? Parnia now includes a local web studio.
+It has text and photo modes, automatic previews, animations, presets, custom
+ink/background colors, borders, multiline alignment, brightness/contrast,
+edge emphasis, mirroring, zoom, copy and TXT/PNG/GIF downloads.
+
+```powershell
+cd D:\Python\Parnia
+.\.venv\Scripts\python.exe -m pip install -r requirements-web.txt
+.\.venv\Scripts\python.exe server.py --https
+```
+
+Open **https://localhost:8443**. Keep the terminal open while using the app;
+Ctrl+C stops it. For HTTP, run `python server.py` and open
+**http://127.0.0.1:8000** instead. `--port` changes the port.
+On Windows you can also run `.\start-studio.ps1 -Https` after installation.
+
+The HTTPS launcher creates a local development certificate in `.local-tls/`.
+Browsers will show a certificate warning until you personally trust the local
+certificate. For this local app only, you can use your browser's Advanced /
+continue option yourself, or install `.local-tls/ca.pem` into your own trusted
+root store. The app never changes your system's trust settings. Certificate
+keys and logs are ignored by Git.
+
+Already have a trusted certificate? Use:
+
+```sh
+python server.py --cert /path/to/certificate.pem --key /path/to/private-key.pem --port 8443
+```
+
+The server binds to your computer's loopback address by default. Photos have
+an 8 MB request limit and a 20 megapixel limit. Uploads are processed in memory;
+export files are temporary and removed after the download response is prepared.
+No gallery, account, database or upload archive is created. `/health` provides
+a read-only health check. Server access/errors appear in the terminal.
+
+Local HTTPS uses Flask's development server with debugging disabled. HTTP uses
+Waitress. For a future public deployment, run Waitress behind a reverse proxy
+with a publicly trusted certificate; do not expose the local HTTPS development
+server. A domain/hosting destination and resource/rate controls are needed
+before publishing it. The working CLI remains available.
+
 ## Get started
 
 Requires **Python 3.10+** on Windows, macOS or Linux.
@@ -184,5 +227,9 @@ extras are missing.
 Optional dependencies: [Pillow](https://pillow.readthedocs.io/),
 [Arabic Reshaper](https://github.com/mpcabd/python-arabic-reshaper), and
 [Python BiDi](https://python-bidi.readthedocs.io/).
+
+Web dependencies: [Flask](https://flask.palletsprojects.com/),
+[Waitress](https://docs.pylonsproject.org/projects/waitress/), and
+[trustme](https://trustme.readthedocs.io/).
 
 Created by [Saeed Ghofrani](https://github.com/saeedghofrani).

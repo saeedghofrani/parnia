@@ -8,7 +8,7 @@ from parnia import drawing_character, render
 
 THEMES = {"classic": "#", "dots": ".", "binary": "01", "hearts": "♥", "stars": "*"}
 STYLES = ("block", "tiny", "bold", "rounded", "outline", "shadow")
-COLORS = ("none", "rainbow", "gradient", "neon")
+COLORS = ("none", "rainbow", "gradient", "neon", "ocean", "sunset")
 ANIMATIONS = ("none", "typewriter", "pixels", "fall")
 
 _TINY = {
@@ -125,6 +125,9 @@ def pixel_color(x, y, width, height, palette):
         return tuple(round(a + (b-a)*t) for a, b in zip((255, 90, 160), (75, 200, 255)))
     if palette == "neon":
         return (90, 255, 190)
+    if palette in ("ocean", "sunset"):
+        start, end = ((60, 110, 255), (60, 255, 210)) if palette == "ocean" else ((255, 100, 70), (205, 90, 255))
+        return tuple(round(a + (b-a)*t) for a, b in zip(start, end))
     return (235, 240, 250)
 
 

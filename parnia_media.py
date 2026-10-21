@@ -81,7 +81,8 @@ def text_bitmap(text, scale=1, font_path=None, persian=False):
     return "\n\n".join(blocks)
 
 
-def image_to_ascii(path, width=80, invert=False, ramp="@%#*+=-:. "):
+def image_to_ascii(path, width=80, invert=False, ramp="@%#*+=-:. ",
+                   brightness=1, contrast=1, edges=False, mirror=False):
     if not isinstance(width, int) or not 10 <= width <= 200:
         raise ValueError("Image width must be from 10 to 200 characters.")
     if len(ramp) < 2 or len(ramp) > 100:
@@ -90,6 +91,10 @@ def image_to_ascii(path, width=80, invert=False, ramp="@%#*+=-:. "):
         if c != " ":
             validate_pattern(c)
     Image, _, _, _, ImageOps = pillow()
+    from PIL import ImageEnhance, ImageFilter
+    for value in (brightness, contrast):
+        if not isinstance(value, (int, float)) or not math.isfinite(value) or not .2 <= value <= 3:
+            raise ValueError("Brightness and contrast must be from 0.2 to 3.")
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("error", Image.DecompressionBombWarning)
@@ -102,6 +107,12 @@ def image_to_ascii(path, width=80, invert=False, ramp="@%#*+=-:. "):
                 gray = Image.alpha_composite(background, rgba).convert("L")
                 height = max(1, min(100, round(gray.height / gray.width * width * .5)))
                 gray = gray.resize((width, height), Image.Resampling.LANCZOS)
+                gray = ImageEnhance.Brightness(gray).enhance(brightness)
+                gray = ImageEnhance.Contrast(gray).enhance(contrast)
+                if edges:
+                    gray = ImageOps.invert(gray.filter(ImageFilter.FIND_EDGES))
+                if mirror:
+                    gray = ImageOps.mirror(gray)
                 if invert:
                     gray = ImageOps.invert(gray)
                 return "\n".join("".join(ramp[gray.getpixel((x, y)) * (len(ramp)-1) // 255]
@@ -110,23 +121,23 @@ def image_to_ascii(path, width=80, invert=False, ramp="@%#*+=-:. "):
         raise ValueError(f"Cannot read image: {path}: {error}") from error
 
 
-def _art_image(art, palette, width, height, font):
+def _art_image(art, palette, width, height, font, background="#0c0f18", foreground="#ebf0fa"):
     Image, ImageDraw, _, ImageFilter, _ = pillow()
-    image = Image.new("RGB", (width * 12 + 32, height * 20 + 32), (12, 15, 24))
+    image = Image.new("RGB", (width * 12 + 32, height * 20 + 32), background)
     ink = Image.new("RGBA", image.size)
     draw = ImageDraw.Draw(ink)
     for y, row in enumerate(art.split("\n")):
         for x, char in enumerate(row):
             if char != " ":
                 draw.text((16 + x*12, 16 + y*20), char, font=font,
-                          fill=(*pixel_color(x, y, width, height, palette), 255))
+                          fill=foreground if palette == "none" else (*pixel_color(x, y, width, height, palette), 255))
     if palette == "neon":
         image = Image.alpha_composite(image.convert("RGBA"), ink.filter(ImageFilter.GaussianBlur(5)))
     return Image.alpha_composite(image.convert("RGBA"), ink).convert("RGB")
 
 
 def export_art(art, path, palette="none", animation="typewriter", delay=.06,
-               overwrite=False):
+               overwrite=False, background="#0c0f18", foreground="#ebf0fa"):
     from parnia_art import ANIMATIONS, COLORS
     if palette not in COLORS or animation not in ANIMATIONS:
         raise ValueError("Unknown palette or animation.")
@@ -150,12 +161,12 @@ def export_art(art, path, palette="none", animation="typewriter", delay=.06,
         raise ValueError("Art is too large for image export. Use less text, smaller scale or narrower image width.")
     font = load_font(17, mono=True)
     if suffix == ".png":
-        _art_image(art, palette, width, height, font).save(target)
+        _art_image(art, palette, width, height, font, background, foreground).save(target)
         return
     if animation == "none":
         raise ValueError("GIF export needs an animation: typewriter, pixels or fall.")
     count = min(24, max(2, 24_000_000 // pixel_count))
-    frames = [_art_image(frame, palette, width, height, font)
+    frames = [_art_image(frame, palette, width, height, font, background, foreground)
               for frame in animation_frames(art, animation, count)]
     duration = max(20, round(delay*1000))
     frames[0].save(target, save_all=True, append_images=frames[1:], loop=0,
